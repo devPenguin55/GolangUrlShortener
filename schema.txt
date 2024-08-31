@@ -1,0 +1,2 @@
+DATABASE FORMAT
+shortenedLink{%$delimiter$%}destinationLink

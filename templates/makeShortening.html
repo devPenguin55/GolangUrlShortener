@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Shortened URL</title>
+    <link rel="stylesheet" href="/static/makeShortening.css">
+</head>
+<body>
+    <div class="terminal">
+      <h1>Create your <span class="errorcode">custom shortened URL!</span></h1>
+      <p id="output" class="output">No output...</p>
+      <form id="shortenedUrlForm">
+          <label class="output" for="shortenedUrl">Preferred link <span class="errorcode">name: </span></label>
+          <input type="text" pattern="[a-z0-9]+" id="shortenedUrl" name="shortenedUrl" placeholder="CUSTOM URL NAME" required>
+      </form>
+
+      <form id="destinationUrlForm" style="display: none;">
+          <label class="output" for="destinationUrl">Preferred Destination <span class="errorcode">URL: </span></label>
+          <input type="url" id="destinationUrl" name="destinationUrl" placeholder="DESTINATION URL" required>
+      </form>
+      <a id="tryItOut" class="output" style="display: none;"></a>
+    </div>
+
+    <script type="application/javascript">
+        const shortenedUrlForm = document.getElementById('shortenedUrlForm');
+        const destinationUrlForm = document.getElementById('destinationUrlForm');
+        const output = document.getElementById('output');
+
+        let shortenedUrl = '';
+
+        shortenedUrlForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            shortenedUrl = document.getElementById('shortenedUrl').value;
+            output.textContent = `Shortened URL set to: /${shortenedUrl}`;
+            shortenedUrlForm.style.display = 'none';
+            destinationUrlForm.style.display = 'block';
+        });
+
+        destinationUrlForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const destinationUrl = document.getElementById('destinationUrl').value;
+            output.textContent = `Creating shortened URL: ${shortenedUrl} -> ${destinationUrl}`;
+            console.log(JSON.stringify({
+                          "shortened": shortenedUrl,
+                          "destination": destinationUrl
+                      }))
+            // Use fetch to send the data to the server
+            fetch('/registerSite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    "shortened": "/"+shortenedUrl,
+                    "destination": destinationUrl
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    output.textContent = `Success! /${shortenedUrl} now redirects to ${destinationUrl}`;
+                    shortenedUrlForm.style.display = 'none';
+                    destinationUrlForm.style.display = 'none';
+                    document.getElementById('tryItOut').style = ''
+                    document.getElementById('tryItOut').textContent = `Try it out?`
+                    document.getElementById('tryItOut').href = shortenedUrl
+                } else {
+                    output.textContent = `Custom name already exists!`;
+                    setTimeout(() => {output.textContent = 'No output...';shortenedUrlForm.style.display = 'block';}, 2000)
+                    shortenedUrlForm.style.display = 'none';
+                    destinationUrlForm.style.display = 'none';
+                    
+                }
+
+            })
+            .catch(error => {
+                // output.textContent = `Error: ${error}`;
+                console.log(error)
+            });
+        });
+    </script>
+</body>
+</html>
