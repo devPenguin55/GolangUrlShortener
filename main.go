@@ -153,7 +153,7 @@ func makeShortenedUrlHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	dbInit()
-	clearDb()
+	// clearDb()
 
 	fmt.Println("Server started!")
 
